@@ -52,6 +52,11 @@
             <assembly ref="responsible-party" max-occurs="unbounded">
                 <group-as name="responsible-parties" in-json="ARRAY"/>
             </assembly>
+            <assembly ref="dataset" min-occurs="0" max-occurs="1">
+                <remarks>
+                    <p>An explanation of origin dataset.</p>
+                </remarks>
+            </assembly>
             <field ref="remarks" in-xml="WITH_WRAPPER"/>
         </model>
         <constraint>
@@ -867,6 +872,28 @@
             </constraint>
         </define-flag>
     </define-field>
+
+    <define-assembly name="dataset" scope="local"/>
+        <formal-name>Dataset Provenance</formal-name>
+        <description>Dataset name and version to explain control catalog baseline dataset and origin.
+        <model>
+            <define-flag name="name">
+                <formal-name>Dataset Name</formal-name>
+                <description>The name of the dataset from which this control originates.</description>
+                <constraint>
+                    <allowed-values allow-other="yes">
+                        <enum value="sp800=53/">A <a href="https://nvd.nist.gov/800-53/">Special Publication 800-53</a> This dataset is the Risk Management Framework Special Publication 800-53 guidance.</enum>
+                        <enum value="isoiec-27001/">A <a href="https://www.iso.org/isoiec-27001-information-security.html/">ISO 27001 Information Security Management</a> This dataset is the ISO/IEC 27001 Information Security Management guidance.</enum>.</enum>
+                    </allowed-values>
+                </constraint>
+            </define-flag>
+            <define-field name="version">
+                <formal-name>Dataset Version</formal-name>
+                <description>Version identifier for the dataset of a given name.</description>
+            </define-field>
+        </model>
+        </description>
+    </define-assembly>
 
     <define-assembly name="address" scope="local">
         <formal-name>Address</formal-name>
