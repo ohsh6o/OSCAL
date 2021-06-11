@@ -882,7 +882,7 @@
                 <description>The name of the dataset from which this control originates.</description>
                 <constraint>
                     <allowed-values allow-other="yes">
-                        <enum value="sp800=53/">A <a href="https://nvd.nist.gov/800-53/">Special Publication 800-53</a> This dataset is the Risk Management Framework Special Publication 800-53 guidance.</enum>
+                        <enum value="sp800-53/">A <a href="https://nvd.nist.gov/800-53/">Special Publication 800-53</a> This dataset is the Risk Management Framework Special Publication 800-53 guidance.</enum>
                         <enum value="isoiec-27001/">A <a href="https://www.iso.org/isoiec-27001-information-security.html/">ISO 27001 Information Security Management</a> This dataset is the ISO/IEC 27001 Information Security Management guidance.</enum>.</enum>
                     </allowed-values>
                 </constraint>
