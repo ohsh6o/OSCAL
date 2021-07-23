@@ -111,6 +111,7 @@
                 <enum value="latest-version">This link identifies a resource containing the latest version in the version history. Defined by <a href="https://tools.ietf.org/html/rfc5829">RFC 5829</a>.</enum>
                 <enum value="predecessor-version">This link identifies a resource containing the predecessor version in the version history. Defined by  <a href="https://tools.ietf.org/html/rfc5829">RFC 5829</a>.</enum>
                 <enum value="successor-version">This link identifies a resource containing the predecessor version in the version history. Defined by <a href="https://tools.ietf.org/html/rfc5829">RFC 5829</a>.</enum>
+                <enum value="dataset-source">This is a UUID reference to dataset information in a relevant back-matter resource.</enum>
             </allowed-values>
         </constraint>
     </define-assembly>
@@ -526,6 +527,7 @@
                         <enum value="questionnaire">Indicates the resource is a set of questions, possibly with responses.</enum>
                         <enum value="report">Indicates the resource is a report.</enum>
                         <enum value="agreement">Indicates the resource is a formal agreement between two or more parties.</enum>
+                        <enum value="dataset">A collection of metadata information to map profile and catalog to their logical origin(s) and group them together.</enum>
                     </allowed-values>
                     <has-cardinality target="rlink|base64" min-occurs="1"/>
                     <is-unique name="unique-resource-rlink-href" target="rlink">
