@@ -184,10 +184,13 @@ def process():
     _, file_ext = os.path.splitext(args.file)
 
     if file_ext == '.json':
+        logging.info('Processing conversions for an OSCAL JSON file')
         process_json(**vars(args))
     elif file_ext == '.xml':
+        logging.info('Processing conversions for an OSCAL XML file')
         process_xml(**vars(args))
     elif file_ext == '.yaml':
+        logging.info('Processing conversions for an OSCAL YAML file')
         process_yaml(**vars(args))
     else:
         logging.error(f"Cannot convert invalid OSCAL file with extension '{file_ext}'.")
