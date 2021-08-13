@@ -154,14 +154,11 @@ post_process_content() {
       if [ "$VERBOSE" = "true" ]; then
         echo -e "${P_INFO}Translating relative XML paths to JSON paths in '${P_END}${target_file_relative}${P_INFO}'.${P_END}"
       fi
-      # # Remove extra slashes
-      # perl -pi -e 's,\\/,/,g' "${target_file}"
-      # # translate OSCAL mime types
-      # perl -pi -e 's,(application/(oscal\.)?[a-z]+\+)xml\",\1json\",g' "${target_file}"
-      # # relative content paths
-      # # translate path names for local references
-      # perl -pi -e 's,((?:\.\./)+(?:(?!xml/)[^\s/"'']+/)+)xml/((?:(?!.xml)[^\s"'']+)+).xml,\1json/\2.json,g' "${target_file}"
-      python $OSCALDIR/build/ci-cd/convert_filetypes.py -o xml -n json --dry-run
+
+      $OSCALDIR/build/ci-cd/python/convert_filetypes.py \
+        --old-extension xml \
+        --new-extension json \
+        "${target_file}"
     fi
 
     # produce pretty JSON
@@ -206,23 +203,22 @@ post_process_content() {
     if [ "$VERBOSE" = "true" ]; then
       echo -e "${P_INFO}Translating relative paths in '${P_END}${yaml_file_relative}${P_INFO}'.${P_END}"
     fi
-    # # translate OSCAL mime types
-    # perl -pi -e 's,(application/oscal\.[a-z]+\+)json\",\1yaml\",g' "${yaml_file}"
-    # # translate path names for local references
-    # perl -pi -e 's,((?:\.\./)+(?:(?!json/)[^\s/"'']+/)+)json/((?:(?!.json)[^\s"'']+)+).json,\1yaml/\2.yaml,g' "${yaml_file}"
-    python $OSCALDIR/build/ci-cd/convert_filetypes.py -o json -n yaml --dry-run
+
+    $OSCALDIR/build/ci-cd/python/convert_filetypes.py \
+      --old-extension json \
+      --new-extension yaml \
+      "$yaml_file"
 
     echo -e "${P_OK}Created YAML '${P_END}${yaml_file_relative}${P_OK}'.${P_END}"
     ;;
   xml)
     if [ "$source_format" = "json" ]; then
       echo -e "${P_INFO}Translating relative paths in '${P_END}${target_file_relative}${P_INFO}'.${P_END}"
-      # # translate OSCAL mime types
-      # perl -pi -e 's,(application/oscal\.[a-z]+\+)json\",\1xml\",g' "${target_file}"
-      # # relative content paths
-      # # translate path names for local references
-      # perl -pi -e 's,((?:\.\./)+(?:(?!json/)[^\s/"'']+/)+)json/((?:(?!.json)[^\s"'']+)+).json,\1xml/\2.xml,g' "${target_file}"
-      python $OSCALDIR/build/ci-cd/convert_filetypes.py -o yaml -n xml --dry-run
+
+      $OSCALDIR/build/ci-cd/python/convert_filetypes.py \
+        --old-extension yaml \
+        --new-extension xml \
+        "${target_file}"
     fi
     ;;
   *)

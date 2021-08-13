@@ -11,6 +11,13 @@ from ruamel.yaml import YAML
 from lxml import etree
 import sys
 
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter('%(message)s')
+handler = logging.StreamHandler(stream=sys.stdout)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
 def find(data={}, lookups=[], path=None):
     path = path if path else []    
 
@@ -76,12 +83,14 @@ def update(data, updates=[{}], originals=[{}], compare_key=None):
 
     for update in updates:
         if update.get(compare_key) in maybe_dupes:
+            logger.debug('Skipping a replacement, converting extension matches existing sibling file')
             continue
 
         target = pick(data, update.get('path'))
 
         for k in update.keys():
             if target.get(k) and not k == 'path' and not k == 'original':
+                logger.debug(f"Converting '{k}' from '{target[k]}' '{update[k]}'")
                 target[k] = update[k]
 
 def update_xml(data, namespaces={}, updates=[{}], originals=[{}], compare_key=None):
@@ -89,6 +98,7 @@ def update_xml(data, namespaces={}, updates=[{}], originals=[{}], compare_key=No
 
     for update in updates:
         if update.get(compare_key) in maybe_dupes:
+            logger.debug('Skipping a replacement, converting extension matches existing sibling file')
             continue
 
         path = update.get('path').replace(f"{{{namespaces.get('xmlns')}}}",'oscal:')
@@ -98,6 +108,7 @@ def update_xml(data, namespaces={}, updates=[{}], originals=[{}], compare_key=No
 
         for k in update.keys():
             if not k == 'path' and not k == 'original':
+                logger.debug(f"Converting '{k}' from '{target[k]}' '{update[k]}'")
                 target.attrib[k] = update[k]
 
 def process_json(file, old='', new='', dry_run=False):
@@ -106,7 +117,8 @@ def process_json(file, old='', new='', dry_run=False):
             raw_data = fd.read()
             data = json.loads(raw_data)
             links = list(find(data, ['href', 'media-type']))
-            replacements = list(r for r in replace(links, 'xml', 'json') if r)
+            replacements = list(r for r in replace(links, old, new) if r)
+            logger.info(f"Found {len(replacements)} potential replacements, attempting updates")
             update(data, replacements, links, 'href')
 
         new_file = dry_run_file(file) if dry_run else file
@@ -115,7 +127,7 @@ def process_json(file, old='', new='', dry_run=False):
             json.dump(data, fd, indent=2)
 
     except Exception as err:
-        logging.exception(err)
+        logger.exception(err)
 
 def process_xml(file, old='', new='', dry_run=False):
     try:
@@ -126,7 +138,8 @@ def process_xml(file, old='', new='', dry_run=False):
             }
             data = etree.parse(fd)
             links = list(find_xml(data, namespaces, "//*[@href or @media-type]"))
-            replacements = list(r for r in replace(links, 'yaml', 'xml') if r)
+            replacements = list(r for r in replace(links, old, new) if r)
+            logger.info(f"Found {len(replacements)} potential replacements, attempting updates")
             update_xml(data, namespaces, replacements, links, 'href')
 
         new_file = dry_run_file(file) if dry_run else file
@@ -135,7 +148,7 @@ def process_xml(file, old='', new='', dry_run=False):
             fd.write(etree.tostring(data, encoding='utf-8', xml_declaration=True, pretty_print=True))
 
     except Exception as err:
-        logging.exception(err)
+        logger.exception(err)
 
 def process_yaml(file, old='', new='', dry_run=False):
     try:
@@ -157,7 +170,8 @@ def process_yaml(file, old='', new='', dry_run=False):
             yaml.constructor.yaml_constructors.pop(u'tag:yaml.org,2002:timestamp', None)
             data = yaml.load(raw_data)
             links = list(find(data, ['href', 'media-type']))
-            replacements = list(r for r in replace(links, 'json', 'yaml') if r)
+            replacements = list(r for r in replace(links, old, new) if r)
+            logger.info(f"Found {len(replacements)} potential replacements, attempting updates")
             update(data, replacements, links, 'href')
 
         new_file = dry_run_file(file) if dry_run else file
@@ -166,11 +180,13 @@ def process_yaml(file, old='', new='', dry_run=False):
             yaml.dump(data, fd)
 
     except Exception as err:
-        logging.exception(err)
+        logger.exception(err)
 
 def dry_run_file(file):
     file, file_ext = os.path.splitext(file)
-    return f"{file}_test{file_ext}"
+    dry_run_file = f"{file}_test{file_ext}"
+    logger.debug(f"Dry run option used, changing file path to {dry_run_file}")
+    return dry_run_file
 
 def process():
     parser = ArgumentParser(description='Convert file extensions in fields with hyperlinks for OSCAL JSON, XML, and YAML document instances.')
@@ -184,16 +200,16 @@ def process():
     _, file_ext = os.path.splitext(args.file)
 
     if file_ext == '.json':
-        logging.info('Processing conversions for an OSCAL JSON file')
+        logger.info(f"Processing file type conversions from '{args.old}' to '{args.new}' for an OSCAL JSON file")
         process_json(**vars(args))
     elif file_ext == '.xml':
-        logging.info('Processing conversions for an OSCAL XML file')
+        logger.info(f"Processing file type conversions from '{args.old}' to '{args.new}' for an OSCAL XML file")
         process_xml(**vars(args))
     elif file_ext == '.yaml':
-        logging.info('Processing conversions for an OSCAL YAML file')
+        logger.info(f"Processing file type conversions from '{args.old}' to '{args.new}' for an OSCAL YAML file")
         process_yaml(**vars(args))
     else:
-        logging.error(f"Cannot convert invalid OSCAL file with extension '{file_ext}'.")
+        logger.error(f"Cannot convert invalid OSCAL file with extension '{file_ext}' in '{args.file}'.")
         sys.exit(1)
 
 if __name__ == '__main__':
